@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: pageHead('Запись дневника')}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('diary')}"></header>
+<main class="page">
+  <div th:replace="~{fragments :: flash}"></div>
+  <a class="back" th:href="${entry == null} ? @{/reader/diary} : @{/reader/diary/{id}(id=${entry.id})}">Назад</a>
+  <h1 th:text="${entry == null} ? 'Новая запись' : 'Редактирование записи'">Новая запись</h1>
+
+  <form class="dform" method="post" th:object="${form}"
+        th:action="${entry == null} ? @{/reader/diary} : @{/reader/diary/{id}(id=${entry.id})}">
+
+    <aside class="dform-book">
+      <div id="bookPreview">
+        <div th:if="${book != null}">
+          <div th:replace="~{fragments :: cover(${book})}"></div>
+          <b th:text="${book.title}">Название</b>
+          <p class="sub" th:text="${book.author}">Автор</p>
+        </div>
+        <div class="book-empty" th:if="${book == null}">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <p>Выберите книгу</p>
+        </div>
+      </div>
+      <input type="hidden" th:field="*{publicationId}">
+      <button type="button" class="btn small" id="pickBtn" th:if="${entry == null}">Выбрать из моих книг</button>
+      <p class="sub" th:if="${entry == null and candidates.isEmpty()}">
+        Пока нет книг для записи. Дневник ведётся по книгам, которые вы брали:
+        <a th:href="@{/catalog}">выберите издание в каталоге</a>.
+      </p>
+    </aside>
+
+    <div class="dform-fields">
+      <div>
+        <span class="field-label">Оценка</span>
+        <div class="star-input" id="starInput" role="slider" tabindex="0" aria-label="Оценка"
+             aria-valuemin="0" aria-valuemax="10" th:attr="aria-valuenow=*{rating}">
+          <span class="stars" id="starView" th:style="'--p:' + *{rating * 10} + '%'">★★★★★</span>
+          <output id="ratingOut" th:text="*{rating} + '/10'">0/10</output>
+        </div>
+        <input type="hidden" th:field="*{rating}">
+      </div>
+
+      <div class="row2">
+        <label>Дата прочтения
+          <input type="date" name="readDate" th:value="*{readDate}" th:attr="max=${#temporals.createToday()}">
+        </label>
+        <label>Настроение
+          <select th:field="*{mood}">
+            <option value="">Выберите настроение</option>
+            <option th:each="m : ${moods}" th:value="${m}" th:text="${m}"></option>
+          </select>
+        </label>
+      </div>
+
+      <label>Теги
+        <input type="text" th:field="*{tags}" placeholder="Добавьте теги через запятую">
+      </label>
+      <label>Ваши мысли о книге
+        <textarea th:field="*{opinion}" rows="5" placeholder="Поделитесь своими впечатлениями…"></textarea>
+      </label>
+      <label>Ассоциации
+        <textarea th:field="*{associations}" rows="3" placeholder="С какими событиями, людьми, местами или чувствами связалась книга"></textarea>
+      </label>
+      <label>Любимые моменты
+        <textarea th:field="*{moments}" rows="3" placeholder="По одному на строку"></textarea>
+      </label>
+      <label>Сцены / персонажи
+        <input type="text" th:field="*{characters}" placeholder="Например: Воланд, Маргарита, Мастер">
+      </label>
+
+      <label class="check"><input type="checkbox" th:field="*{favorite}"> Сохранить в избранное</label>
+
+      <div class="form-actions">
+        <button class="btn" name="action" value="save">Сохранить</button>
+        <button class="btn ghost" name="action" value="draft">Сохранить как черновик</button>
+        <a class="btn ghost" th:href="${entry == null} ? @{/reader/diary} : @{/reader/diary/{id}(id=${entry.id})}">Отмена</a>
+      </div>
+    </div>
+  </form>
+
+  <div class="diary-foot">
+    <svg class="foot-book" viewBox="0 0 64 56" aria-hidden="true">
+      <path d="M32 12C24 6 12 6 4 9v36c8-3 20-3 28 3 8-6 20-6 28-3V9c-8-3-20-3-28 3z" fill="#eadffb" stroke="#b9a2f0" stroke-width="2"/>
+      <path d="M32 12v36" stroke="#b9a2f0" stroke-width="2"/>
+    </svg>
+    <p>Читательский дневник —<br>это ваш личный уголок<br>в мире книг ♡</p>
+  </div>
+
+  <!-- окно выбора книги -->
+  <dialog id="pickDialog" class="pick" th:if="${entry == null}">
+    <h3>Выберите книгу</h3>
+    <p class="sub" th:if="${candidates.isEmpty()}">Здесь появятся книги, которые вы брали в библиотеке.</p>
+    <ul>
+      <li th:each="p : ${candidates}">
+        <button type="button" class="pick-item"
+                th:attr="data-id=${p.id},data-title=${p.title},data-author=${p.author},data-cover=${p.coverUrl}">
+          <span class="mini"><div th:replace="~{fragments :: cover(${p})}"></div></span>
+          <span><b th:text="${p.title}">Название</b><small th:text="${p.author}">Автор</small></span>
+        </button>
+      </li>
+    </ul>
+    <form method="dialog"><button class="btn ghost small">Закрыть</button></form>
+  </dialog>
+</main>
+
+<script>
+  (function () {
+    // звёзды: клик по звезде ставит оценку от 1 до 10 (по половинкам), повторный клик сбрасывает
+    var box = document.getElementById('starInput');
+    var view = document.getElementById('starView');
+    var out = document.getElementById('ratingOut');
+    var input = document.querySelector('input[name=rating]');
+    function setRating(v) {
+      v = Math.max(0, Math.min(10, v));
+      input.value = v;
+      view.style.setProperty('--p', (v * 10) + '%');
+      out.textContent = v + '/10';
+      box.setAttribute('aria-valuenow', v);
+    }
+    box.addEventListener('click', function (e) {
+      var r = view.getBoundingClientRect();
+      var v = Math.ceil(((e.clientX - r.left) / r.width) * 10);
+      v = Math.max(1, Math.min(10, v));
+      setRating(Number(input.value) === v ? 0 : v);
+    });
+    box.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { setRating(Number(input.value) + 1); e.preventDefault(); }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { setRating(Number(input.value) - 1); e.preventDefault(); }
+    });
+
+    // выбор книги из окна
+    var dialog = document.getElementById('pickDialog');
+    var pick = document.getElementById('pickBtn');
+    if (dialog && pick) {
+      var hidden = document.querySelector('input[name=publicationId]');
+      pick.addEventListener('click', function () { dialog.showModal(); });
+      dialog.querySelectorAll('.pick-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+          var d = item.dataset;
+          hidden.value = d.id;
+          var box2 = document.getElementById('bookPreview');
+          box2.textContent = '';
+          var cover = document.createElement('div');
+          cover.className = 'cover tone-' + (Number(d.id) % 6);
+          if (d.cover) {
+            var img = document.createElement('img');
+            img.src = d.cover;
+            img.alt = '';
+            cover.appendChild(img);
+          } else {
+            var t = document.createElement('span');
+            t.className = 'cover-title';
+            t.textContent = d.title;
+            cover.appendChild(t);
+          }
+          var b = document.createElement('b');
+          b.textContent = d.title;
+          var p = document.createElement('p');
+          p.className = 'sub';
+          p.textContent = d.author;
+          box2.append(cover, b, p);
+          dialog.close();
+        });
+      });
+    }
+  })();
+</script>
+</body>
+</html>

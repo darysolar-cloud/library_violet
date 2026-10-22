@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: pageHead('Штрафы')}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('fines')}"></header>
+<main class="page">
+  <div th:replace="~{fragments :: flash}"></div>
+  <h1>Штрафы</h1>
+  <div class="figures">
+    <div th:classappend="${total > 0} ? 'warn'"><strong th:text="${total} + ' ₽'">0 ₽</strong><span>ждёт оплаты</span></div>
+    <div><strong th:text="${rate} + ' ₽'">10 ₽</strong><span>за каждый день просрочки</span></div>
+  </div>
+  <p class="note">Штраф начисляется автоматически. Пока издание не возвращено, сумма растёт каждый день. Оплату можно отметить после возврата.</p>
+
+  <p class="empty" th:if="${loans.isEmpty()}">Штрафов нет.</p>
+  <div class="table-wrap" th:if="${!loans.isEmpty()}">
+    <table>
+      <thead><tr><th>Читатель</th><th>Издание</th><th>Дней просрочки</th><th>Сумма</th><th>Статус</th><th></th></tr></thead>
+      <tbody>
+      <tr th:each="l : ${loans}">
+        <td th:text="${l.user.fullName}"></td>
+        <td th:text="${l.publication.title}"></td>
+        <td th:text="${l.overdueDays}"></td>
+        <td th:classappend="${l.fineUnpaid} ? 'bad'" th:text="${l.fine} + ' ₽'"></td>
+        <td>
+          <span class="tag ok" th:if="${l.finePaid}">Оплачен</span>
+          <span class="tag late" th:if="${!l.finePaid and !l.returned}">Растёт, издание на руках</span>
+          <span class="tag late" th:if="${!l.finePaid and l.returned}">Ждёт оплаты</span>
+        </td>
+        <td>
+          <form th:if="${l.fineUnpaid and l.returned}" method="post" th:action="@{/admin/fines/{id}/pay(id=${l.id})}">
+            <button class="btn small">Отметить оплату</button>
+          </form>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>

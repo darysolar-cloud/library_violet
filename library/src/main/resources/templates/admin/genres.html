@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: pageHead('Жанры')}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('genres')}"></header>
+<main class="page">
+    <div th:replace="~{fragments :: flash}"></div>
+    <h1>Жанры</h1>
+
+    <form class="issue" method="post" th:action="@{/admin/genres}">
+        <input type="text" name="name" placeholder="Новый жанр" required>
+        <button class="btn">Добавить</button>
+    </form>
+    <p class="note">Жанр, который используется в изданиях, удалить нельзя: сначала смените жанр у этих изданий. При переименовании жанр обновится у всех изданий сам.</p>
+
+    <p class="empty" th:if="${genres.isEmpty()}">Жанров пока нет.</p>
+    <div class="table-wrap" th:if="${!genres.isEmpty()}">
+        <table>
+            <thead><tr><th>Жанр</th><th>Изданий</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="g : ${genres}">
+                <td>
+                    <form class="inline-edit" method="post" th:action="@{/admin/genres/{id}/rename(id=${g.id})}">
+                        <input type="text" name="name" th:value="${g.name}" required>
+                        <button class="btn ghost small">Переименовать</button>
+                    </form>
+                </td>
+                <td th:text="${counts.getOrDefault(g.name, 0L)}">0</td>
+                <td>
+                    <form method="post" th:action="@{/admin/genres/{id}/delete(id=${g.id})}">
+                        <button class="btn danger small">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

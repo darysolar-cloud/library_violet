@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="pageHead(title)">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${title} + ' — Violet Library'">Violet Library</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div class="shell" th:fragment="topbar(active)">
+
+  <!-- узор: веточка (рисуется один раз, используется несколько раз) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <path id="leaf-shape" d="M0 0C7-9 8-27 0-40C-8-27-7-9 0 0Z"/>
+    </defs>
+    <symbol id="sprig" viewBox="0 0 120 240">
+      <path d="M60 240Q72 130 60 22" fill="none" stroke="#cbb9f2" stroke-width="2.5" stroke-linecap="round"/>
+      <g fill="#d6c8f5">
+        <use href="#leaf-shape" transform="translate(63.5 200) rotate(-58) scale(1.25)"/>
+        <use href="#leaf-shape" transform="translate(65.4 165) rotate(-58) scale(1.15)"/>
+        <use href="#leaf-shape" transform="translate(66 130) rotate(-58) scale(1)"/>
+        <use href="#leaf-shape" transform="translate(65.4 95) rotate(-58) scale(.85)"/>
+        <use href="#leaf-shape" transform="translate(63.5 60) rotate(-58) scale(.7)"/>
+        <use href="#leaf-shape" transform="translate(60 26) scale(.8)"/>
+      </g>
+      <g fill="#e3d9fa">
+        <use href="#leaf-shape" transform="translate(64.3 188) rotate(58) scale(1.2)"/>
+        <use href="#leaf-shape" transform="translate(65.7 153) rotate(58) scale(1.1)"/>
+        <use href="#leaf-shape" transform="translate(65.9 118) rotate(58) scale(.95)"/>
+        <use href="#leaf-shape" transform="translate(64.8 83) rotate(58) scale(.8)"/>
+        <use href="#leaf-shape" transform="translate(62.6 48) rotate(58) scale(.65)"/>
+      </g>
+    </symbol>
+  </svg>
+  <svg class="leaf leaf-tr" viewBox="0 0 120 240" aria-hidden="true"><use href="#sprig"/></svg>
+  <svg class="leaf leaf-br" viewBox="0 0 120 240" aria-hidden="true"><use href="#sprig"/></svg>
+
+  <aside class="sidebar">
+    <svg class="leaf leaf-side" viewBox="0 0 120 240" aria-hidden="true"><use href="#sprig"/></svg>
+
+    <a class="logo" th:href="@{/}">
+      <svg class="logo-book" viewBox="0 0 48 40" aria-hidden="true">
+        <path d="M24 8C20 5 12 4 4 6v28c8-2 16-1 20 2 4-3 12-4 20-2V6c-8-2-16-1-20 2z" fill="#6f4bd0"/>
+        <path d="M24 10c-3.5-2.2-9.5-3-17-1.6V31c7.5-1.4 13.5-.6 17 1.6z" fill="#a98ff0"/>
+        <path d="M24 10c3.5-2.2 9.5-3 17-1.6V31c-7.5-1.4-13.5-.6-17 1.6z" fill="#8a67e0"/>
+      </svg>
+      <span><b>Violet Library</b><small>Книги, которые вдохновляют</small></span>
+    </a>
+
+    <nav class="side-nav">
+      <th:block sec:authorize="hasRole('READER')">
+        <a th:href="@{/home}" th:classappend="${active == 'home'} ? 'on'">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Главная</a>
+        <a th:href="@{/catalog}" th:classappend="${active == 'catalog'} ? 'on'">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Каталог</a>
+        <a th:href="@{/reader}" th:classappend="${active == 'loans'} ? 'on'">
+          <svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Мои выдачи</a>
+        <a th:href="@{/reader/diary}" th:classappend="${active == 'diary'} ? 'on'">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Читательский дневник</a>
+        <a th:href="@{/reader/profile}" th:classappend="${active == 'profile'} ? 'on'">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Профиль</a>
+      </th:block>
+
+      <th:block sec:authorize="hasRole('LIBRARIAN')">
+        <a th:href="@{/admin}" th:classappend="${active == 'dash'} ? 'on'">
+          <svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Обзор</a>
+        <a th:href="@{/admin/readers}" th:classappend="${active == 'readers'} ? 'on'">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Читатели</a>
+        <a th:href="@{/admin/publications}" th:classappend="${active == 'pubs'} ? 'on'">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Издания</a>
+        <a th:href="@{/admin/loans}" th:classappend="${active == 'loans'} ? 'on'">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Выдачи</a>
+        <a th:href="@{/admin/fines}" th:classappend="${active == 'fines'} ? 'on'">
+          <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Штрафы</a>
+        <a th:href="@{/admin/genres}" th:classappend="${active == 'genres'} ? 'on'">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Жанры</a>
+        <a th:href="@{/admin/quotes}" th:classappend="${active == 'quotes'} ? 'on'">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Цитаты</a>
+        <a th:href="@{/catalog}" th:classappend="${active == 'catalog'} ? 'on'">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Каталог</a>
+      </th:block>
+    </nav>
+
+    <p class="side-quote">Читай,<br>развивайся,<br>вдохновляйся</p>
+
+    <form class="side-foot" th:action="@{/logout}" method="post">
+      <button><svg class="ic" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Выйти</button>
+    </form>
+  </aside>
+
+  <div class="topline" th:if="${me != null}">
+    <form class="search" method="get" th:action="@{/catalog}">
+      <svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" name="q" placeholder="Поиск по каталогу…" aria-label="Поиск">
+      <select name="type" onchange="this.form.submit()" aria-label="Категория">
+        <option value="">Все категории</option>
+        <option value="BOOK">Книги</option>
+        <option value="MAGAZINE">Журналы</option>
+      </select>
+    </form>
+    <a class="bell" title="Уведомления"
+       th:href="${me.role.name() == 'READER'} ? @{/reader(tab='reminders')} : @{/admin/notifications}">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <b th:if="${bell > 0}" th:text="${bell}">1</b>
+    </a>
+    <a class="me" th:href="${me.role.name() == 'READER'} ? @{/reader/profile} : @{/admin/profile}" title="Открыть профиль">
+      <span class="avatar">
+        <img th:if="${me.avatarUrl}" th:src="@{${me.avatarUrl}}" alt="">
+        <th:block th:unless="${me.avatarUrl}" th:text="${#strings.substring(me.fullName, 0, 1)}">А</th:block>
+      </span>
+      <span class="me-text">
+        <b th:text="${me.fullName}">Имя</b>
+        <small th:text="${me.role.name() == 'READER'} ? 'Читатель' : 'Библиотекарь'">Читатель</small>
+      </span>
+      <svg class="ic chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </a>
+  </div>
+</div>
+
+<div class="flashes" th:fragment="flash">
+  <div class="alert ok" th:if="${ok}" th:text="${ok}"></div>
+  <div class="alert err" th:if="${error}" th:text="${error}"></div>
+</div>
+
+<!-- Обложка: загруженная картинка или оформленная заглушка с названием -->
+<div class="cover" th:fragment="cover(p)" th:classappend="'tone-' + ${p.id % 6}">
+  <img th:if="${p.coverFile}" th:src="@{${p.coverUrl}}" th:alt="'Обложка: ' + ${p.title}">
+  <span th:unless="${p.coverFile}" class="cover-title" th:text="${p.title}"></span>
+</div>
+
+</body>
+</html>

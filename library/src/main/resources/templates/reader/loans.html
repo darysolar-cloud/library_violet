@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: pageHead('Мои выдачи')}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('loans')}"></header>
+<main class="page">
+  <div th:replace="~{fragments :: flash}"></div>
+
+  <section class="pf-hero">
+    <div>
+      <h1>Мои выдачи</h1>
+      <p>Здесь вы можете посмотреть все книги, которые сейчас у вас на руках.</p>
+    </div>
+  </section>
+
+  <p class="note" th:if="${fineDue > 0 or !overdueLoans.isEmpty()}">
+    Пока есть просроченное издание или неоплаченный штраф (сейчас
+    <b th:text="${fineDue} + ' ₽'">0 ₽</b>), новые выдачи недоступны. Верните издание и оплатите штраф у библиотекаря.
+  </p>
+
+  <section class="card">
+    <nav class="chips" aria-label="Вкладки выдач">
+      <a th:href="@{/reader(tab='current')}" th:classappend="${tab != 'history' and tab != 'reminders'} ? 'on'">Текущие выдачи <b th:text="${countCurrent}">0</b></a>
+      <a th:href="@{/reader(tab='history')}" th:classappend="${tab == 'history'} ? 'on'">История <b th:text="${countHistory}">0</b></a>
+      <a th:href="@{/reader(tab='reminders')}" th:classappend="${tab == 'reminders'} ? 'on'">Напоминания <b th:if="${unreadCount > 0}" th:text="${unreadCount}">1</b></a>
+    </nav>
+
+    <!-- Текущие выдачи и история -->
+    <th:block th:if="${tab != 'reminders'}">
+      <p class="empty" th:if="${rows.isEmpty()}"
+         th:text="${tab == 'history'} ? 'Возвращённых изданий пока нет.' : 'Сейчас на руках ничего нет.'">Пусто</p>
+
+      <div class="loan-row" th:each="l : ${rows}">
+        <div class="mini"><div th:replace="~{fragments :: cover(${l.publication})}"></div></div>
+        <div class="loan-main">
+          <b th:text="${l.publication.title}">Название</b>
+          <small th:text="${l.publication.author}">Автор</small>
+          <span class="tag" th:text="${l.publication.genre} ?: ${l.publication.type.title}">Жанр</span>
+        </div>
+        <div><span class="lbl">Выдано</span><span class="val" th:text="${#temporals.format(l.issuedAt, 'dd.MM.yyyy')}"></span></div>
+        <div>
+          <span class="lbl" th:text="${l.returned} ? 'Возвращено' : 'Вернуть до'">Вернуть до</span>
+          <span class="val" th:text="${l.returned} ? ${#temporals.format(l.returnedAt, 'dd.MM.yyyy')} : ${#temporals.format(l.dueDate, 'dd.MM.yyyy')}"></span>
+        </div>
+        <span class="pill done" th:if="${l.returned}">Возвращена</span>
+        <span class="pill late" th:if="${l.overdue}">Просрочена</span>
+        <span class="pill" th:if="${!l.returned and !l.overdue}">Активна</span>
+        <a class="btn ghost small" th:if="${!diary.containsKey(l.publication.id)}"
+           th:href="@{/reader/diary/new(publicationId=${l.publication.id})}">Записать в дневник</a>
+        <a class="btn small" th:if="${diary.containsKey(l.publication.id)}"
+           th:href="@{/reader/diary/{id}(id=${diary.get(l.publication.id)})}">Открыть дневник</a>
+        <a class="icon-btn" th:href="@{/catalog/{id}(id=${l.publication.id})}" title="Открыть издание" aria-label="Открыть издание">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </a>
+      </div>
+    </th:block>
+
+    <!-- Напоминания -->
+    <th:block th:if="${tab == 'reminders'}">
+      <h2 class="sub-h" th:if="${!overdueLoans.isEmpty()}">Просроченные книги</h2>
+      <div class="loan-late" th:each="l : ${overdueLoans}">
+        <b th:text="${l.publication.title}">Название</b>
+        <span class="bad" th:text="'просрочка ' + ${l.overdueDays} + ' дн., штраф ' + ${l.fine} + ' ₽'">просрочка</span>
+      </div>
+
+      <h2 class="sub-h">История уведомлений</h2>
+      <p class="empty" th:if="${reminders.isEmpty()}">Уведомлений пока нет. Мы напомним, когда срок возврата будет близко.</p>
+      <div class="notice" th:each="n : ${reminders}"
+           th:classappend="${n.kind == 'OVERDUE' or n.kind == 'FINE'} ? 'late' : (${n.kind == 'SOON'} ? 'soon' : 'info')">
+  <span class="dot">
+    <svg th:if="${n.kind == 'OVERDUE' or n.kind == 'FINE'}" class="ic" viewBox="0 0 24 24"><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <svg th:if="${n.kind == 'SOON'}" class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <svg th:if="${n.kind != 'OVERDUE' and n.kind != 'FINE' and n.kind != 'SOON'}" class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+  </span>
+        <div>
+          <b th:text="${n.title}">Заголовок</b>
+          <small th:text="${n.text}">Текст</small>
+        </div>
+        <time>
+          <span class="new-dot" th:if="${unreadIds.contains(n.id)}" title="Новое"></span>
+          <span th:text="${#temporals.format(n.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2026</span>
+        </time>
+      </div>
+    </th:block>
+  </section>
+</main>
+</body>
+</html>

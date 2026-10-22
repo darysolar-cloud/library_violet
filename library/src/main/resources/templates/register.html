@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: pageHead('Регистрация')}"></head>
+<body class="auth">
+<section class="auth-art">
+  <div class="spines" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="auth-copy">
+    <h1>Читательский билет за минуту</h1>
+    <p>После регистрации можно сразу выбирать издания в каталоге.</p>
+  </div>
+</section>
+<section class="auth-panel">
+  <form class="auth-form" method="post" th:action="@{/register}" th:object="${form}">
+    <h2>Новый читатель</h2>
+    <label>Имя и фамилия
+      <input type="text" th:field="*{fullName}" required>
+      <small class="field-err" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></small>
+    </label>
+    <label>Почта
+      <input type="email" th:field="*{email}" required>
+      <small class="field-err" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+    </label>
+    <label>Телефон (необязательно)
+      <input type="tel" th:field="*{phone}">
+    </label>
+    <label>Пароль
+      <input type="password" th:field="*{password}" required minlength="6">
+      <small class="field-err" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></small>
+    </label>
+    <button class="btn wide">Зарегистрироваться</button>
+    <p class="alt">Уже есть аккаунт? <a th:href="@{/login}">Войти</a></p>
+  </form>
+</section>
+</body>
+</html>

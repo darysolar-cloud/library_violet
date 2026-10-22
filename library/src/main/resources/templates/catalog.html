@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments :: pageHead('Каталог')}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('catalog')}"></header>
+<main class="page">
+  <div th:replace="~{fragments :: flash}"></div>
+
+  <section class="cat-head">
+    <div>
+      <h1>Каталог</h1>
+      <p>Откройте для себя новые истории. Выбирайте книги по жанрам, авторам и настроению.</p>
+    </div>
+    <figure class="cat-quote" th:if="${quote != null}">
+      <blockquote th:text="'«' + ${quote.body} + '»'">«Цитата»</blockquote>
+      <figcaption th:text="${quote.author}">Автор</figcaption>
+      <svg class="art" viewBox="0 0 120 90" aria-hidden="true">
+        <ellipse cx="100" cy="20" rx="5" ry="16" transform="rotate(14 100 20)" fill="#cdbdf2"/>
+        <rect x="14" y="56" width="100" height="22" rx="4" fill="#5b45bd"/>
+        <rect x="20" y="61" width="88" height="12" rx="2" fill="#f4f0ff"/>
+        <rect x="26" y="34" width="84" height="22" rx="4" fill="#8a77dc"/>
+        <rect x="32" y="39" width="72" height="12" rx="2" fill="#f4f0ff"/>
+      </svg>
+    </figure>
+  </section>
+
+  <form class="cat-filters" method="get" th:action="@{/catalog}">
+    <div class="cat-row">
+      <div class="sel">
+        <svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" name="q" th:value="${q}" placeholder="Название книги, автор или жанр…" aria-label="Поиск">
+      </div>
+      <div class="sel">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        <select name="genre" aria-label="Жанр">
+          <option value="">Все жанры</option>
+          <option th:each="g : ${genres}" th:value="${g}" th:text="${g}" th:selected="${g == genre}"></option>
+        </select>
+      </div>
+      <div class="sel">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <select name="type" aria-label="Тип издания">
+          <option value="">Книги и журналы</option>
+          <option th:each="t : ${types}" th:value="${t}" th:text="${t.title}" th:selected="${t == type}"></option>
+        </select>
+      </div>
+      <div class="sel">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M7 4v16"/><path d="M3 8l4-4 4 4"/><path d="M17 20V4"/><path d="M13 16l4 4 4-4"/></svg>
+        <select name="sort" aria-label="Сортировка">
+          <option value="title" th:selected="${sort == 'title'}">По алфавиту (А → Я)</option>
+          <option value="new" th:selected="${sort == 'new'}">Сначала новые</option>
+          <option value="popular" th:selected="${sort == 'popular'}">Сначала популярные</option>
+        </select>
+      </div>
+      <button class="btn">
+        <svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Найти
+      </button>
+    </div>
+
+    <div class="cat-row2">
+      <label class="switch">
+        <input type="checkbox" name="available" value="true" th:checked="${available}">
+        Только доступные
+      </label>
+      <div class="view-toggle" role="group" aria-label="Вид списка">
+        <button type="button" data-view="grid" class="on" aria-label="Плитка">
+          <svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </button>
+        <button type="button" data-view="list" aria-label="Список">
+          <svg class="ic" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <p class="empty" th:if="${publications.isEmpty()}">Ничего не нашли. Попробуйте другое слово или сбросьте фильтры.</p>
+
+  <ul class="shelf" id="shelf">
+    <li class="bk" th:each="p : ${publications}">
+      <div class="bk-cover">
+        <a th:href="@{/catalog/{id}(id=${p.id})}" th:title="${p.title}">
+          <div th:replace="~{fragments :: cover(${p})}"></div>
+        </a>
+        <span class="badge" th:classappend="${p.availableCopies == 0} ? 'out'"
+              th:text="${p.availableCopies > 0} ? 'Доступна' : 'Нет в наличии'">Доступна</span>
+        <form class="heart" sec:authorize="hasRole('READER')" method="post" th:action="@{/catalog/{id}/readlist(id=${p.id})}">
+          <button th:classappend="${readIds.contains(p.id)} ? 'on'"
+                  th:title="${readIds.contains(p.id)} ? 'Убрать из избранного' : 'Добавить в избранное'" aria-label="Избранное">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+        </form>
+      </div>
+      <div class="bk-body">
+        <a class="bk-title" th:href="@{/catalog/{id}(id=${p.id})}" th:text="${p.title}">Название</a>
+        <span class="bk-author" th:text="${p.author}">Автор</span>
+        <span class="bk-tags">
+          <span class="tag" th:if="${p.genre}" th:text="${p.genre}">Жанр</span>
+          <span class="tag" th:text="${p.type.title}">Книга</span>
+        </span>
+        <span class="bk-stock" th:text="'Свободно: ' + ${p.availableCopies} + ' из ' + ${p.totalCopies}">Свободно</span>
+        <a class="bk-more" th:href="@{/catalog/{id}(id=${p.id})}">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          Подробнее
+          <svg class="ic" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </div>
+    </li>
+  </ul>
+</main>
+
+<script>
+  (function () {
+    var shelf = document.getElementById('shelf');
+    var buttons = document.querySelectorAll('.view-toggle button');
+    function apply(view) {
+      shelf.classList.toggle('as-list', view === 'list');
+      buttons.forEach(function (b) { b.classList.toggle('on', b.dataset.view === view); });
+    }
+    var saved = 'grid';
+    try { saved = localStorage.getItem('catalogView') || 'grid'; } catch (e) {}
+    apply(saved);
+    buttons.forEach(function (b) {
+      b.addEventListener('click', function () {
+        apply(b.dataset.view);
+        try { localStorage.setItem('catalogView', b.dataset.view); } catch (e) {}
+      });
+    });
+  })();
+</script>
+</body>
+</html>

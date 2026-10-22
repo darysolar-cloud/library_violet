@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: pageHead('Издания')}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('pubs')}"></header>
+<main class="page">
+  <div th:replace="~{fragments :: flash}"></div>
+  <div class="head-row">
+    <h1>Издания</h1>
+    <a class="btn" th:href="@{/admin/publications/new}">Добавить издание</a>
+    <form method="post" th:action="@{/admin/book-of-day/reset}">
+      <button class="btn ghost small">Сбросить книгу дня</button>
+    </form>
+  </div>
+  <form class="filters" method="get" th:action="@{/admin/publications}">
+    <input type="search" name="q" th:value="${q}" placeholder="Название, автор или жанр" aria-label="Поиск">
+    <button class="btn">Найти</button>
+  </form>
+
+  <p class="empty" th:if="${publications.isEmpty()}">Изданий пока нет. Добавьте первое.</p>
+  <div class="table-wrap" th:if="${!publications.isEmpty()}">
+    <table>
+      <thead><tr><th></th><th>Издание</th><th>Тип</th><th>Год</th><th>Свободно</th><th></th></tr></thead>
+      <tbody>
+      <tr th:each="p : ${publications}">
+        <td class="mini"><div th:replace="~{fragments :: cover(${p})}"></div></td>
+        <td>
+          <a th:href="@{/catalog/{id}(id=${p.id})}" th:text="${p.title}"></a>
+          <div class="sub" th:text="${p.author}"></div>
+        </td>
+        <td th:text="${p.type.title}"></td>
+        <td th:text="${p.publishYear} ?: '—'"></td>
+        <td th:text="${p.availableCopies} + ' из ' + ${p.totalCopies}"></td>
+        <td class="row-actions">
+          <a class="btn ghost small" th:href="@{/admin/publications/{id}/edit(id=${p.id})}">Изменить</a>
+          <form method="post" th:action="@{/admin/book-of-day/{id}(id=${p.id})}">
+            <button class="btn ghost small" title="Показать на главной сегодня">Книга дня</button>
+          </form>
+          <form method="post" th:action="@{/admin/publications/{id}/delete(id=${p.id})}"
+                onsubmit="return confirm('Удалить издание «' + this.dataset.title + '»?')" th:data-title="${p.title}">
+            <button class="btn danger small">Удалить</button>
+          </form>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>

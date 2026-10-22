@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: pageHead('Издание')}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('pubs')}"></header>
+<main class="page narrow">
+  <div th:replace="~{fragments :: flash}"></div>
+  <a class="back" th:href="@{/admin/publications}">К списку изданий</a>
+  <h1 th:text="${pub.id == null} ? 'Новое издание' : 'Редактирование издания'">Издание</h1>
+
+  <form class="form" method="post" enctype="multipart/form-data" th:action="@{/admin/publications}" th:object="${pub}">
+    <input type="hidden" th:field="*{id}">
+
+    <div class="cover-edit">
+      <div class="mini big-mini" th:if="${pub.id != null}">
+        <div th:replace="~{fragments :: cover(${pub})}"></div>
+      </div>
+      <div class="cover-fields">
+        <label>Обложка
+          <input type="file" name="cover" accept="image/png,image/jpeg,image/webp,image/gif">
+          <small>PNG, JPG, WebP или GIF до 5 МБ. Лучше вертикальная, примерно 2:3.</small>
+        </label>
+        <label class="check" th:if="${pub.coverFile != null}">
+          <input type="checkbox" name="removeCover" value="true"> Убрать текущую обложку
+        </label>
+      </div>
+    </div>
+
+    <label>Тип
+      <select th:field="*{type}">
+        <option th:each="t : ${types}" th:value="${t}" th:text="${t.title}"></option>
+      </select>
+    </label>
+    <label>Название<input type="text" th:field="*{title}" required></label>
+    <label>Автор или редакция<input type="text" th:field="*{author}" required></label>
+    <div class="row3">
+      <label>Год<input type="number" th:field="*{publishYear}" min="0" max="2100"></label>
+      <label>Жанр
+        <select th:field="*{genre}">
+          <option value="">— без жанра —</option>
+          <option th:each="g : ${genres}" th:value="${g}" th:text="${g}"></option>
+        </select>
+      </label>
+      <label>Экземпляров<input type="number" th:field="*{totalCopies}" min="1" required></label>
+    </div>
+    <label>Аннотация
+      <textarea th:field="*{annotation}" rows="7" placeholder="Несколько предложений о том, о чём издание"></textarea>
+    </label>
+
+    <div class="form-actions">
+      <button class="btn">Сохранить</button>
+      <a class="btn ghost" th:href="@{/admin/publications}">Отмена</a>
+    </div>
+  </form>
+</main>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: pageHead('Читательский дневник')}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('diary')}"></header>
+<main class="page">
+    <div th:replace="~{fragments :: flash}"></div>
+
+    <section class="pf-hero">
+        <div>
+            <h1>Читательский дневник</h1>
+            <p>Здесь вы можете делиться своими мыслями, ассоциациями и впечатлениями от прочитанных книг.</p>
+        </div>
+    </section>
+
+    <nav class="chips" aria-label="Вкладки дневника">
+        <a th:href="@{/reader/diary(tab='mine')}" th:classappend="${tab != 'fav' and tab != 'draft'} ? 'on'">Мои записи <b th:text="${countMine}">0</b></a>
+        <a th:href="@{/reader/diary(tab='fav')}" th:classappend="${tab == 'fav'} ? 'on'">Избранное <b th:text="${countFav}">0</b></a>
+        <a th:href="@{/reader/diary(tab='draft')}" th:classappend="${tab == 'draft'} ? 'on'">Черновики <b th:text="${countDraft}">0</b></a>
+    </nav>
+
+    <form class="diary-bar" method="get" th:action="@{/reader/diary}">
+        <input type="hidden" name="tab" th:value="${tab}">
+        <div class="sel">
+            <svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="search" name="q" th:value="${q}" placeholder="Поиск по названию или автору…" aria-label="Поиск">
+        </div>
+        <div class="sel">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            <select name="genre" aria-label="Жанр" onchange="this.form.submit()">
+                <option value="">Все жанры</option>
+                <option th:each="g : ${genres}" th:value="${g}" th:text="${g}" th:selected="${g == genre}"></option>
+            </select>
+        </div>
+        <button class="btn ghost">Найти</button>
+        <a class="btn" th:href="@{/reader/diary/new}">+ Добавить запись</a>
+    </form>
+
+    <div class="empty-state" th:if="${entries.isEmpty()}">
+        <p>Здесь пока пусто. Откройте «Мои выдачи» и нажмите «Записать в дневник» у нужной книги.</p>
+        <a class="btn" th:href="@{/reader}">Перейти к выдачам</a>
+    </div>
+
+    <ul class="diary-grid">
+        <li class="dcard" th:each="e : ${entries}">
+            <form class="heart" method="post" th:action="@{/reader/diary/{id}/favorite(id=${e.id})}">
+                <button th:classappend="${e.favorite} ? 'on'" th:title="${e.favorite} ? 'Убрать из избранного' : 'В избранное'" aria-label="Избранное">
+                    <svg class="ic" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </button>
+            </form>
+            <a class="dcard-cover" th:href="@{/reader/diary/{id}(id=${e.id})}">
+                <div th:replace="~{fragments :: cover(${e.publication})}"></div>
+            </a>
+            <a class="dcard-title" th:href="@{/reader/diary/{id}(id=${e.id})}" th:text="${e.publication.title}">Название</a>
+            <span class="dcard-author" th:text="${e.publication.author}">Автор</span>
+            <span class="dcard-author" th:if="${e.readDate}" th:text="${#temporals.format(e.readDate, 'dd.MM.yyyy')}">01.01.2026</span>
+            <div class="rate" th:if="${e.rating > 0}">
+                <span class="stars" th:style="'--p:' + ${e.rating * 10} + '%'">★★★★★</span>
+                <b th:text="${e.rating} + '/10'">0/10</b>
+            </div>
+            <p class="dcard-quote" th:if="${e.opinion}" th:text="'«' + ${#strings.abbreviate(e.opinion, 140)} + '»'">Мысли</p>
+            <p class="sub" th:unless="${e.opinion}">Мысли пока не записаны.</p>
+            <div class="bk-tags">
+                <span class="pill done" th:if="${e.draft}">Черновик</span>
+                <th:block th:each="t, st : ${e.tagList}">
+                    <span class="tag" th:if="${st.index < 3}" th:text="${t}">тег</span>
+                </th:block>
+            </div>
+            <details class="menu">
+                <summary aria-label="Действия">⋯</summary>
+                <div class="menu-pop">
+                    <a th:href="@{/reader/diary/{id}(id=${e.id})}">Открыть запись</a>
+                    <a th:href="@{/reader/diary/{id}/edit(id=${e.id})}">Редактировать</a>
+                    <form method="post" th:action="@{/reader/diary/{id}/delete(id=${e.id})}" onsubmit="return confirm('Удалить запись из дневника?')">
+                        <button>Удалить</button>
+                    </form>
+                </div>
+            </details>
+        </li>
+    </ul>
+    <div class="diary-foot">
+        <svg class="foot-book" viewBox="0 0 64 56" aria-hidden="true">
+            <path d="M32 12C24 6 12 6 4 9v36c8-3 20-3 28 3 8-6 20-6 28-3V9c-8-3-20-3-28 3z" fill="#eadffb" stroke="#b9a2f0" stroke-width="2"/>
+            <path d="M32 12v36" stroke="#b9a2f0" stroke-width="2"/>
+        </svg>
+        <p>Читательский дневник —<br>это ваш личный уголок<br>в мире книг ♡</p>
+    </div>
+</main>
+</body>
+</html>

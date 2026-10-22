@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: pageHead('Обзор')}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('dash')}"></header>
+<main class="page">
+  <div th:replace="~{fragments :: flash}"></div>
+  <h1>Обзор</h1>
+
+  <div class="figures five">
+    <div><strong th:text="${stats.readers()}">0</strong><span>читателей</span></div>
+    <div><strong th:text="${stats.titles()}">0</strong><span>наименований</span></div>
+    <div><strong th:text="${stats.onHand()}">0</strong><span>на руках</span></div>
+    <div th:classappend="${stats.overdue() > 0} ? 'warn'"><strong th:text="${stats.overdue()}">0</strong><span>просрочено</span></div>
+    <div th:classappend="${stats.fineDue() > 0} ? 'warn'"><strong th:text="${stats.fineDue()} + ' ₽'">0 ₽</strong><span>штрафов к оплате</span></div>
+  </div>
+
+  <div class="two-col">
+    <section>
+      <h2>Просроченные выдачи</h2>
+      <p class="empty" th:if="${overdue.isEmpty()}">Просрочек нет.</p>
+      <div class="table-wrap" th:if="${!overdue.isEmpty()}">
+        <table>
+          <thead><tr><th>Читатель</th><th>Издание</th><th>Дней</th><th>Штраф</th></tr></thead>
+          <tbody>
+          <tr th:each="l : ${overdue}">
+            <td th:text="${l.user.fullName}"></td>
+            <td th:text="${l.publication.title}"></td>
+            <td th:text="${l.overdueDays}"></td>
+            <td class="bad" th:text="${l.fine} + ' ₽'"></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <a th:href="@{/admin/loans(filter='overdue')}">Все просроченные выдачи</a>
+    </section>
+
+    <section>
+      <h2>Чаще всего берут</h2>
+      <p class="empty" th:if="${popular.isEmpty()}">Выдач пока не было.</p>
+      <ol class="rank" th:if="${!popular.isEmpty()}">
+        <li th:each="p : ${popular}"><span th:text="${p.title()}"></span><b th:text="${p.count()}"></b></li>
+      </ol>
+    </section>
+  </div>
+</main>
+</body>
+</html>

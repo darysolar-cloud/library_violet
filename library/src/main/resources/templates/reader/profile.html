@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: pageHead('Профиль')}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('profile')}"></header>
+<main class="page">
+  <div th:replace="~{fragments :: flash}"></div>
+
+  <section class="pf-hero">
+    <div>
+      <h1>Мой профиль</h1>
+      <p>Здесь вы можете посмотреть и изменить свои данные, узнать о текущих выдачах и задолженностях.</p>
+    </div>
+    <svg class="pf-art" viewBox="0 0 320 130" aria-hidden="true">
+      <path d="M20 130a140 100 0 0 1 280 0z" fill="#eee7fb"/>
+      <g fill="#cdbdf2">
+        <ellipse cx="205" cy="36" rx="9" ry="24" transform="rotate(-28 205 36)"/>
+        <ellipse cx="232" cy="26" rx="8" ry="22" transform="rotate(8 232 26)"/>
+        <ellipse cx="296" cy="40" rx="8" ry="22" transform="rotate(28 296 40)"/>
+        <ellipse cx="276" cy="24" rx="8" ry="20" transform="rotate(-6 276 24)"/>
+      </g>
+      <rect x="120" y="82" width="170" height="36" rx="5" fill="#5b45bd"/>
+      <rect x="128" y="88" width="154" height="24" rx="3" fill="#f4f0ff"/>
+      <rect x="140" y="50" width="140" height="32" rx="5" fill="#8a77dc"/>
+      <rect x="148" y="56" width="124" height="20" rx="3" fill="#f4f0ff"/>
+    </svg>
+  </section>
+
+  <div class="pf-grid">
+
+    <!-- ЛЕВАЯ КОЛОНКА -->
+    <div class="pf-main">
+
+      <section class="pf-card">
+        <div class="pf-head">
+          <div class="pf-avatar-wrap">
+            <span class="pf-avatar">
+               <img th:if="${u.avatarUrl}" th:src="@{${u.avatarUrl}}" alt="Аватарка">
+               <th:block th:unless="${u.avatarUrl}" th:text="${#strings.substring(u.fullName, 0, 1)}">А</th:block>
+            </span>
+            <form class="avatar-form" method="post" enctype="multipart/form-data" th:action="@{/account/avatar}">
+              <label class="avatar-btn" title="Сменить аватарку">
+                <svg class="ic" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <input type="file" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif"
+                       onchange="if (this.files[0] && this.files[0].size > 2 * 1024 * 1024) { alert('Файл больше 2 МБ'); this.value = ''; } else { this.form.submit(); }">
+              </label>
+            </form>
+          </div>
+          <div class="pf-who">
+            <h2 th:text="${u.fullName}">Имя Фамилия</h2>
+            <p class="pf-role">Читатель</p>
+            <span class="pf-badge">
+              <svg class="ic" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              Билет № <span th:text="${u.ticketNumber}">00000</span>
+            </span>
+          </div>
+          <button type="button" class="pf-edit" onclick="document.getElementById('edit-form').toggleAttribute('hidden')">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+            Редактировать
+          </button>
+        </div>
+
+        <dl class="pf-rows">
+          <div><dt>Электронная почта</dt>
+            <dd><svg class="ic" viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span th:text="${u.email}"></span></dd></div>
+          <div><dt>Телефон</dt>
+            <dd><svg class="ic" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span th:text="${u.phone} ?: 'не указан'"></span></dd></div>
+          <div><dt>Дата регистрации</dt>
+            <dd><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span th:text="${#temporals.format(u.registeredAt, 'dd.MM.yyyy')}"></span></dd></div>
+        </dl>
+        <form class="avatar-remove" method="post" th:action="@{/account/avatar/remove}" th:if="${u.avatarUrl}">
+          <button class="link-btn">Удалить фото</button>
+        </form>
+        <form id="edit-form" class="pf-form" hidden method="post" th:action="@{/reader/profile}">
+          <form class="avatar-remove" method="post" th:action="@{/account/avatar/remove}" th:if="${u.avatarUrl}">
+            <button class="link-btn">Удалить фото</button>
+          </form>
+          <label>Имя и фамилия<input type="text" name="fullName" th:value="${u.fullName}" required></label>
+          <label>Телефон<input type="tel" name="phone" th:value="${u.phone}"></label>
+          <div class="form-actions">
+            <button class="btn">Сохранить</button>
+            <button type="button" class="btn ghost" onclick="document.getElementById('edit-form').setAttribute('hidden','')">Отмена</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="pf-card">
+        <h2 class="pf-title">
+          <span class="pf-ico"><svg class="ic" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
+          Мои выдачи
+          <a th:href="@{/reader}">Все выдачи</a>
+        </h2>
+        <p class="empty" th:if="${active.isEmpty()}">Сейчас на руках ничего нет.</p>
+        <div class="pf-loan" th:each="l : ${active}">
+          <div class="mini"><div th:replace="~{fragments :: cover(${l.publication})}"></div></div>
+          <div><b th:text="${l.publication.title}">Название</b><small th:text="${l.publication.author}">Автор</small></div>
+          <span class="tag" th:text="${l.publication.type.title}">Книга</span>
+          <div><span class="lbl">Выдано</span><span class="val" th:text="${#temporals.format(l.issuedAt, 'dd.MM.yyyy')}"></span></div>
+          <div><span class="lbl">Вернуть до</span><span class="val" th:text="${#temporals.format(l.dueDate, 'dd.MM.yyyy')}"></span></div>
+          <span class="pill" th:classappend="${l.overdue} ? 'late'" th:text="${l.overdue} ? 'Просрочена' : 'Активна'">Активна</span>
+        </div>
+        <a class="pf-cta" th:href="@{/catalog}">Оформить новую выдачу <span aria-hidden="true">→</span></a>
+      </section>
+    </div>
+
+    <!-- ПРАВАЯ КОЛОНКА -->
+    <div class="pf-side">
+
+      <section class="pf-card">
+        <h2 class="pf-title">
+          <span class="pf-ico"><svg class="ic" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
+          Текущие задолженности
+        </h2>
+        <div class="pf-ok" th:if="${fineDue == 0 and overdue == 0}">
+          <span class="dot"><svg class="ic" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <div><b>Задолженностей нет</b><small>У вас нет неоплаченных штрафов и просрочек.</small></div>
+        </div>
+        <div class="pf-bad" th:if="${fineDue > 0 or overdue > 0}">
+          <span class="dot"><svg class="ic" viewBox="0 0 24 24"><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+          <div>
+            <b th:text="'Штраф к оплате: ' + ${fineDue} + ' ₽'">Штраф</b>
+            <small>Верните просроченные издания и оплатите штраф у библиотекаря.</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="pf-card">
+        <h2 class="pf-title">
+          <span class="pf-ico"><svg class="ic" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+          Уведомления
+        </h2>
+        <p class="empty" th:if="${notices.isEmpty()}">Уведомлений пока нет.</p>
+        <div class="notice" th:each="n : ${notices}"
+             th:classappend="${n.kind == 'OVERDUE' or n.kind == 'FINE'} ? 'late' : (${n.kind == 'SOON'} ? 'soon' : 'info')">
+  <span class="dot">
+    <svg th:if="${n.kind == 'OVERDUE' or n.kind == 'FINE'}" class="ic" viewBox="0 0 24 24"><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <svg th:if="${n.kind == 'SOON'}" class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <svg th:if="${n.kind != 'OVERDUE' and n.kind != 'FINE' and n.kind != 'SOON'}" class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+  </span>
+          <div><b th:text="${n.title}">Заголовок</b><small th:text="${n.text}">Текст</small></div>
+          <time th:text="${#temporals.format(n.createdAt, 'dd.MM.yyyy')}">01.01.2026</time>
+        </div>
+        <a th:href="@{/reader(tab='reminders')}">Все уведомления</a>
+      </section>
+
+      <section class="pf-card">
+        <h2 class="pf-title">
+          <span class="pf-ico"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+          История выдач
+          <a th:href="@{/reader}">Вся история</a>
+        </h2>
+        <p class="empty" th:if="${history.isEmpty()}">Возвращённых изданий пока нет.</p>
+        <div class="hist" th:each="l : ${history}">
+          <div class="mini"><div th:replace="~{fragments :: cover(${l.publication})}"></div></div>
+          <div><b th:text="${l.publication.title}">Название</b><small th:text="${l.publication.author}">Автор</small></div>
+          <time th:text="${#temporals.format(l.returnedAt, 'dd.MM.yyyy')}">01.01.2026</time>
+          <span class="pill done">Возвращена</span>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+</body>
+</html>

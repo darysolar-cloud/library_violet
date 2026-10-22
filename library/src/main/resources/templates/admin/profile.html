@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: pageHead('Профиль')}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('profile')}"></header>
+<main class="page narrow">
+    <div th:replace="~{fragments :: flash}"></div>
+    <h1>Профиль</h1>
+
+    <section class="pf-card">
+        <div class="pf-head">
+            <div class="pf-avatar-wrap">
+        <span class="pf-avatar">
+          <img th:if="${u.avatarUrl}" th:src="@{${u.avatarUrl}}" alt="Аватарка">
+          <th:block th:unless="${u.avatarUrl}" th:text="${#strings.substring(u.fullName, 0, 1)}">А</th:block>
+        </span>
+                <form class="avatar-form" method="post" enctype="multipart/form-data" th:action="@{/account/avatar}">
+                    <label class="avatar-btn" title="Сменить аватарку">
+                        <svg class="ic" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                        <input type="file" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif"
+                               onchange="if (this.files[0] && this.files[0].size > 2 * 1024 * 1024) { alert('Файл больше 2 МБ'); this.value = ''; } else { this.form.submit(); }">
+                    </label>
+                </form>
+            </div>
+            <div class="pf-who">
+                <h2 th:text="${u.fullName}">Имя Фамилия</h2>
+                <p class="pf-role">Библиотекарь</p>
+                <p class="sub" th:text="${u.email}">почта</p>
+            </div>
+        </div>
+        <form class="avatar-remove" method="post" th:action="@{/account/avatar/remove}" th:if="${u.avatarUrl}">
+            <button class="link-btn">Удалить фото</button>
+        </form>
+    </section>
+</main>
+</body>
+</html>

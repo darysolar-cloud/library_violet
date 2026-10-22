@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: pageHead('Выдачи')}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('loans')}"></header>
+<main class="page">
+  <div th:replace="~{fragments :: flash}"></div>
+
+  <section class="pf-hero">
+    <div>
+      <h1>Выдачи</h1>
+      <p>Здесь вы можете просматривать и оформлять выдачи книг и журналов и отслеживать сроки возврата.</p>
+    </div>
+    <svg class="pf-art" viewBox="0 0 320 130" aria-hidden="true">
+      <path d="M20 130a140 100 0 0 1 280 0z" fill="#eee7fb"/>
+      <g fill="#cdbdf2">
+        <ellipse cx="205" cy="36" rx="9" ry="24" transform="rotate(-28 205 36)"/>
+        <ellipse cx="232" cy="26" rx="8" ry="22" transform="rotate(8 232 26)"/>
+        <ellipse cx="296" cy="40" rx="8" ry="22" transform="rotate(28 296 40)"/>
+        <ellipse cx="276" cy="24" rx="8" ry="20" transform="rotate(-6 276 24)"/>
+      </g>
+      <rect x="120" y="82" width="170" height="36" rx="5" fill="#5b45bd"/>
+      <rect x="128" y="88" width="154" height="24" rx="3" fill="#f4f0ff"/>
+      <rect x="140" y="50" width="140" height="32" rx="5" fill="#8a77dc"/>
+      <rect x="148" y="56" width="124" height="20" rx="3" fill="#f4f0ff"/>
+    </svg>
+  </section>
+
+  <form class="issue-card" method="post" th:action="@{/admin/loans}">
+    <div class="sel">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <select name="userId" required aria-label="Читатель">
+        <option value="">Выберите читателя</option>
+        <option th:each="u : ${readers}" th:value="${u.id}" th:text="${u.fullName + ' (' + u.ticketNumber + ')'}"></option>
+      </select>
+    </div>
+    <div class="sel">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      <select name="publicationId" required aria-label="Издание">
+        <option value="">Выберите издание</option>
+        <option th:each="p : ${available}" th:value="${p.id}" th:text="${p.title + ' — ' + p.author}"></option>
+      </select>
+    </div>
+    <button class="btn">
+      <svg class="ic" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Оформить выдачу
+    </button>
+  </form>
+
+  <section class="card">
+    <nav class="chips" aria-label="Фильтр выдач">
+      <a th:href="@{/admin/loans(filter='all')}" th:classappend="${filter == 'all'} ? 'on'">Все <b th:text="${countAll}">0</b></a>
+      <a th:href="@{/admin/loans(filter='active')}" th:classappend="${filter == 'active'} ? 'on'">Активные <b th:text="${countActive}">0</b></a>
+      <a th:href="@{/admin/loans(filter='overdue')}" th:classappend="${filter == 'overdue'} ? 'on'">Просроченные <b th:text="${countOverdue}">0</b></a>
+      <a th:href="@{/admin/loans(filter='returned')}" th:classappend="${filter == 'returned'} ? 'on'">Возвращённые <b th:text="${countReturned}">0</b></a>
+    </nav>
+
+    <p class="empty" th:if="${loans.isEmpty()}">В этом списке пока пусто.</p>
+
+    <div class="table-wrap open" th:if="${!loans.isEmpty()}">
+      <table>
+        <thead>
+        <tr><th>Читатель</th><th>Книга</th><th>Выдано</th><th>Вернуть до</th><th>Статус</th><th>Штраф</th><th>Действия</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="l : ${loans}">
+          <td>
+            <div class="who-cell">
+              <span class="av">
+  <img th:if="${l.user.avatarUrl}" th:src="@{${l.user.avatarUrl}}" alt="">
+  <th:block th:unless="${l.user.avatarUrl}" th:text="${#strings.substring(l.user.fullName, 0, 1)}">А</th:block>
+</span>
+              <div><b th:text="${l.user.fullName}">Имя</b><div class="sub" th:text="${l.user.ticketNumber}">ЧБ-00000</div></div>
+            </div>
+          </td>
+          <td>
+            <div class="book-cell">
+              <div class="mini"><div th:replace="~{fragments :: cover(${l.publication})}"></div></div>
+              <div><b th:text="${l.publication.title}">Название</b><div class="sub" th:text="${l.publication.author}">Автор</div></div>
+            </div>
+          </td>
+          <td th:text="${#temporals.format(l.issuedAt, 'dd.MM.yyyy')}"></td>
+          <td th:text="${#temporals.format(l.dueDate, 'dd.MM.yyyy')}"></td>
+          <td>
+            <span class="pill done" th:if="${l.returned}">Возвращена</span>
+            <span class="pill late" th:if="${l.overdue}">Просрочена</span>
+            <span class="pill" th:if="${!l.returned and !l.overdue}">Активна</span>
+          </td>
+          <td th:classappend="${l.fineUnpaid} ? 'bad'" th:text="${l.fine + ' ₽' + (l.finePaid ? ' (оплачен)' : '')}"></td>
+          <td>
+            <details class="menu">
+              <summary aria-label="Действия">⋯</summary>
+              <div class="menu-pop">
+                <form th:unless="${l.returned}" method="post" th:action="@{/admin/loans/{id}/return(id=${l.id})}">
+                  <button>Принять возврат</button>
+                </form>
+                <form th:if="${l.returned and l.fineUnpaid}" method="post" th:action="@{/admin/fines/{id}/pay(id=${l.id})}">
+                  <button>Отметить оплату штрафа</button>
+                </form>
+                <a th:href="@{/catalog/{id}(id=${l.publication.id})}">Открыть издание</a>
+              </div>
+            </details>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pager" th:if="${total > 0}">
+      <span th:text="'Показано ' + ${loans.size()} + ' из ' + ${total} + ' выдач'">Показано 5 из 27 выдач</span>
+      <nav th:if="${pages > 1}" aria-label="Страницы">
+        <a th:if="${page > 1}" th:href="@{/admin/loans(filter=${filter},page=${page - 1})}" aria-label="Назад">‹</a>
+        <a th:each="n : ${#numbers.sequence(1, pages)}" th:href="@{/admin/loans(filter=${filter},page=${n})}"
+           th:classappend="${n == page} ? 'on'" th:text="${n}">1</a>
+        <a th:if="${page < pages}" th:href="@{/admin/loans(filter=${filter},page=${page + 1})}" aria-label="Вперёд">›</a>
+      </nav>
+    </div>
+  </section>
+</main>
+</body>
+</html>

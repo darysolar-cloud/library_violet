@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: pageHead('Главная')}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('home')}"></header>
+<main class="page">
+    <div th:replace="~{fragments :: flash}"></div>
+
+    <div class="hello">
+        <h1 th:text="'Здравствуйте, ' + ${me.fullName}">Здравствуйте</h1>
+        <p>Что почитаем сегодня?</p>
+    </div>
+
+    <div class="home-grid">
+        <section class="quote-card" th:if="${quote != null}">
+            <p class="kicker">Цитата дня</p>
+            <blockquote th:text="${quote.body}">Цитата</blockquote>
+            <cite th:text="'— ' + ${quote.author}">— Автор</cite>
+            <form method="post" th:action="@{/home/quote/{id}/favorite(id=${quote.id})}">
+                <button class="btn" th:text="${quoteFav} ? 'В избранном ★' : 'В избранное ☆'">В избранное</button>
+            </form>
+        </section>
+        <section class="pf-card" th:if="${quote == null}">
+            <p class="empty">Цитат пока нет. Библиотекарь добавляет их в разделе «Цитаты».</p>
+        </section>
+
+        <section class="pf-card" th:if="${book != null}">
+            <p class="kicker-dark">Книга дня</p>
+            <div class="botd">
+                <div th:replace="~{fragments :: cover(${book})}"></div>
+                <div>
+                    <span class="tag" th:text="${book.genre} ?: ${book.type.title}">Жанр</span>
+                    <h3 th:text="${book.title}">Название</h3>
+                    <p class="by" th:text="${book.author}">Автор</p>
+                    <p th:if="${book.annotation}" th:text="${#strings.abbreviate(book.annotation, 220)}"></p>
+                    <p class="stock" th:classappend="${book.availableCopies == 0} ? 'out'"
+                       th:text="${book.availableCopies > 0} ? 'Доступно: ' + ${book.availableCopies} + ' из ' + ${book.totalCopies} : 'Все экземпляры на руках'"></p>
+                    <a class="btn" th:href="@{/catalog/{id}(id=${book.id})}">Открыть в каталоге</a>
+                </div>
+            </div>
+        </section>
+        <section class="pf-card" th:if="${book == null}">
+            <p class="empty">Пока нечего предложить: в каталоге нет доступных изданий.</p>
+        </section>
+    </div>
+
+    <section class="card" th:if="${!favorites.isEmpty()}">
+        <h2>Избранные цитаты</h2>
+        <ul class="fav-list">
+            <li th:each="f : ${favorites}">
+                <span><span th:text="${f.body}"></span> <em class="sub" th:text="'— ' + ${f.author}"></em></span>
+                <form method="post" th:action="@{/home/quote/{id}/favorite(id=${f.id})}">
+                    <button class="x" title="Убрать из избранного" aria-label="Убрать из избранного">×</button>
+                </form>
+            </li>
+        </ul>
+    </section>
+</main>
+</body>
+</html>

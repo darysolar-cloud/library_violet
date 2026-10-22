@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments :: pageHead(${p.title})}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('catalog')}"></header>
+<main class="page">
+  <div th:replace="~{fragments :: flash}"></div>
+  <a class="back" th:href="@{/catalog}">Назад в каталог</a>
+
+  <article class="detail">
+    <div th:replace="~{fragments :: cover(${p})}"></div>
+    <div class="detail-body">
+      <span class="tag" th:text="${p.type.title}"></span>
+      <h1 th:text="${p.title}"></h1>
+      <p class="by" th:text="${p.author}"></p>
+
+      <dl class="facts">
+        <div th:if="${p.publishYear != null}"><dt>Год</dt><dd th:text="${p.publishYear}"></dd></div>
+        <div th:if="${p.genre}"><dt>Жанр</dt><dd th:text="${p.genre}"></dd></div>
+        <div><dt>В наличии</dt><dd th:text="${p.availableCopies} + ' из ' + ${p.totalCopies}"></dd></div>
+      </dl>
+
+      <h2>Аннотация</h2>
+      <p class="annotation" th:if="${p.annotation}" th:text="${p.annotation}"></p>
+      <p class="empty" th:unless="${p.annotation}">Аннотация пока не добавлена.</p>
+
+      <div class="actions" sec:authorize="hasRole('READER')">
+        <div class="btn-row">
+          <form th:if="${p.availableCopies > 0}" method="post" th:action="@{/catalog/{id}/borrow(id=${p.id})}">
+            <button class="btn big" th:text="'Взять на ' + ${loanDays} + ' дн.'">Взять</button>
+          </form>
+          <form method="post" th:action="@{/catalog/{id}/readlist(id=${p.id})}">
+            <button class="btn ghost big" th:text="${inReadList} ? 'Убрать из избранного' : 'В избранное'">В ReadList</button>
+          </form>
+        </div>
+        <p class="empty" th:unless="${p.availableCopies > 0}">Все экземпляры сейчас на руках. Можно добавить издание в избранное и вернуться позже.</p>
+      </div>
+    </div>
+  </article>
+</main>
+</body>
+</html>

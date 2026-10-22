@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: pageHead('Уведомления')}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('dash')}"></header>
+<main class="page">
+    <div th:replace="~{fragments :: flash}"></div>
+    <h1>Уведомления</h1>
+
+    <section class="card">
+        <p class="empty" th:if="${items.isEmpty()}">Уведомлений пока нет.</p>
+        <div class="notice late" th:each="n : ${items}">
+      <span class="dot">
+        <svg class="ic" viewBox="0 0 24 24"><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </span>
+            <div>
+                <b th:text="${n.title}">Заголовок</b>
+                <small th:text="${n.text}">Текст</small>
+            </div>
+            <time>
+                <span class="new-dot" th:if="${unreadIds.contains(n.id)}" title="Новое"></span>
+                <span th:text="${#temporals.format(n.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2026</span>
+            </time>
+        </div>
+        <a class="btn ghost small" th:href="@{/admin/loans(filter='overdue')}">Открыть просроченные выдачи</a>
+    </section>
+</main>
+</body>
+</html>

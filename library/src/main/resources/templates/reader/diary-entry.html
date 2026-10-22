@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: pageHead('Запись дневника')}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('diary')}"></header>
+<main class="page">
+    <div th:replace="~{fragments :: flash}"></div>
+    <a class="back" th:href="@{/reader/diary}">К дневнику</a>
+
+    <div class="de-grid">
+
+        <aside class="de-side">
+            <form class="heart" method="post" th:action="@{/reader/diary/{id}/favorite(id=${e.id})}">
+                <button th:classappend="${e.favorite} ? 'on'" th:title="${e.favorite} ? 'Убрать из избранного' : 'В избранное'" aria-label="Избранное">
+                    <svg class="ic" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </button>
+            </form>
+            <div th:replace="~{fragments :: cover(${e.publication})}"></div>
+            <h2 th:text="${e.publication.title}">Название</h2>
+            <p class="sub" th:text="${e.publication.author}">Автор</p>
+            <div class="bk-tags">
+                <span class="tag" th:if="${e.publication.genre}" th:text="${e.publication.genre}">Жанр</span>
+                <span class="tag" th:text="${e.publication.type.title}">Книга</span>
+                <span class="pill done" th:if="${e.draft}">Черновик</span>
+            </div>
+            <div class="rate" th:if="${e.rating > 0}">
+                <span class="stars" th:style="'--p:' + ${e.rating * 10} + '%'">★★★★★</span>
+                <b th:text="${e.rating} + '/10'">0/10</b>
+            </div>
+            <div th:if="${e.readDate}">
+                <span class="lbl">Дата прочтения</span>
+                <b th:text="${#temporals.format(e.readDate, 'dd.MM.yyyy')}">01.01.2026</b>
+            </div>
+            <a class="bk-more" th:href="@{/catalog/{id}(id=${e.publication.id})}">
+                <svg class="ic" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                Перейти к книге
+            </a>
+        </aside>
+
+        <section class="de-main">
+            <div class="de-tabs">
+                <a class="on">Моя запись</a>
+                <a th:href="@{/reader/diary/{id}/edit(id=${e.id})}">Редактировать</a>
+                <form method="post" th:action="@{/reader/diary/{id}/delete(id=${e.id})}" onsubmit="return confirm('Удалить запись из дневника?')">
+                    <button class="x" title="Удалить запись" aria-label="Удалить запись">
+                        <svg class="ic" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                    </button>
+                </form>
+            </div>
+
+            <div class="de-sec">
+                <svg class="ic" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <div>
+                    <h3>Моё мнение</h3>
+                    <p th:if="${e.opinion}" th:text="${e.opinion}">Мнение</p>
+                    <p class="empty" th:unless="${e.opinion}">Пока пусто. <a th:href="@{/reader/diary/{id}/edit(id=${e.id})}">Добавить</a></p>
+                </div>
+            </div>
+
+            <div class="de-sec">
+                <svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <div>
+                    <h3>Ассоциации</h3>
+                    <p th:if="${e.associations}" th:text="${e.associations}">Ассоциации</p>
+                    <p class="empty" th:unless="${e.associations}">Пока пусто. <a th:href="@{/reader/diary/{id}/edit(id=${e.id})}">Добавить</a></p>
+                </div>
+            </div>
+
+            <div class="de-sec">
+                <svg class="ic" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <div>
+                    <h3>Любимые моменты</h3>
+                    <ul th:if="${!e.momentLines.isEmpty()}">
+                        <li th:each="m : ${e.momentLines}" th:text="${m}">Момент</li>
+                    </ul>
+                    <p class="empty" th:if="${e.momentLines.isEmpty()}">Пока пусто. <a th:href="@{/reader/diary/{id}/edit(id=${e.id})}">Добавить</a></p>
+                </div>
+            </div>
+        </section>
+
+        <aside class="de-info">
+            <section>
+                <h3>Моё настроение</h3>
+                <span class="tag" th:if="${e.mood}" th:text="${e.mood}">Настроение</span>
+                <p class="empty" th:unless="${e.mood}">Не выбрано</p>
+            </section>
+            <section>
+                <h3>Теги</h3>
+                <div class="bk-tags"><span class="tag" th:each="t : ${e.tagList}" th:text="${t}">тег</span></div>
+                <p class="empty" th:if="${e.tagList.isEmpty()}">Нет тегов</p>
+            </section>
+            <section>
+                <h3>Сцены / персонажи</h3>
+                <p th:if="${e.characters}" th:text="${e.characters}">Персонажи</p>
+                <p class="empty" th:unless="${e.characters}">Не указано</p>
+            </section>
+            <section>
+                <h3>Оценка</h3>
+                <div class="rate" th:if="${e.rating > 0}">
+                    <span class="stars" th:style="'--p:' + ${e.rating * 10} + '%'">★★★★★</span>
+                    <b th:text="${e.rating} + '/10'">0/10</b>
+                </div>
+                <p class="empty" th:unless="${e.rating > 0}">Без оценки</p>
+            </section>
+            <section>
+                <h3>Добавить заметку</h3>
+                <form class="note-form" method="post" th:action="@{/reader/diary/{id}/note(id=${e.id})}">
+                    <textarea name="note" rows="3" placeholder="Например, что хочу перечитать…" th:text="${e.note}"></textarea>
+                    <button class="btn wide">Сохранить</button>
+                </form>
+            </section>
+        </aside>
+
+    </div>
+</main>
+</body>
+</html>

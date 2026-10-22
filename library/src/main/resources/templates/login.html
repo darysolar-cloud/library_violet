@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Вход — Violet Library</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="auth lg">
+<div class="lg-card">
+
+  <section class="lg-art">
+    <div class="lg-logo">
+      <span class="lg-logo-mark">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="#fff" aria-hidden="true"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg>
+      </span>
+      Violet Library
+    </div>
+
+    <div class="lg-copy">
+      <p class="lg-kicker">Ваша личная библиотека</p>
+      <h1>Истории,<br>которые<br><em>остаются.</em></h1>
+      <p class="lg-lead">Открывайте новые миры, следите за выдачами и храните любимые книги в одном месте.</p>
+    </div>
+
+    <div class="lg-orn" aria-hidden="true"><span>✧</span><span>❧</span><span>✦</span></div>
+  </section>
+
+  <section class="lg-form-wrap">
+    <form class="lg-form" method="post" th:action="@{/login}">
+      <p class="lg-eyebrow">С возвращением</p>
+      <h2>Войти в аккаунт</h2>
+      <p class="lg-sub">Введите данные своей учётной записи.</p>
+
+      <div class="alert err" th:if="${param.error}">Неверная почта или пароль, либо аккаунт заблокирован.</div>
+      <div class="alert ok" th:if="${param.logout}">Вы вышли из аккаунта.</div>
+      <div class="alert ok" th:if="${param.registered}">Аккаунт создан. Теперь можно войти.</div>
+
+      <label>Логин
+        <input type="email" name="username" placeholder="Ваша почта" required autofocus autocomplete="username">
+      </label>
+      <label>Пароль
+        <input type="password" name="password" placeholder="Ваш пароль" required autocomplete="current-password">
+      </label>
+
+      <button class="lg-btn">Войти <span aria-hidden="true">↗</span></button>
+      <p class="lg-alt">Впервые здесь? <a th:href="@{/register}">Создать аккаунт читателя</a></p>
+
+      <div class="lg-demo">
+        <strong>Демо-доступ</strong>
+        <div><span>Читатель</span><code>reader@library.local / reader123</code></div>
+        <div><span>Библиотекарь</span><code>admin@library.local / admin123</code></div>
+      </div>
+
+      <p class="lg-foot">Violet Library · пространство для чтения</p>
+    </form>
+  </section>
+
+</div>
+</body>
+</html>

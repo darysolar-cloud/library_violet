@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: pageHead('Цитаты')}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('quotes')}"></header>
+<main class="page">
+    <div th:replace="~{fragments :: flash}"></div>
+    <h1>Цитаты</h1>
+    <p class="note">Каждый день на главной показывается одна цитата из этого списка, по очереди.</p>
+
+    <form class="form card" method="post" th:action="@{/admin/quotes}">
+        <label>Текст цитаты<textarea name="body" rows="3" required></textarea></label>
+        <label>Автор<input type="text" name="author" required></label>
+        <div class="form-actions"><button class="btn">Добавить цитату</button></div>
+    </form>
+
+    <p class="empty" th:if="${quotes.isEmpty()}">Цитат пока нет.</p>
+    <div class="table-wrap" th:if="${!quotes.isEmpty()}">
+        <table>
+            <thead><tr><th>Цитата</th><th>Автор</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="q : ${quotes}">
+                <td th:text="${q.body}"></td>
+                <td th:text="${q.author}"></td>
+                <td>
+                    <form method="post" th:action="@{/admin/quotes/{id}/delete(id=${q.id})}">
+                        <button class="btn danger small">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

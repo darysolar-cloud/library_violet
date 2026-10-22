@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: pageHead('Читатели')}"></head>
+<body>
+<header th:replace="~{fragments :: topbar('readers')}"></header>
+<main class="page">
+  <div th:replace="~{fragments :: flash}"></div>
+  <h1>Читатели</h1>
+  <form class="filters" method="get" th:action="@{/admin/readers}">
+    <input type="search" name="q" th:value="${q}" placeholder="Имя, почта или номер билета" aria-label="Поиск">
+    <button class="btn">Найти</button>
+  </form>
+
+  <p class="empty" th:if="${rows.isEmpty()}">Читателей не найдено.</p>
+  <div class="table-wrap" th:if="${!rows.isEmpty()}">
+    <table>
+      <thead><tr><th>Билет</th><th>Читатель</th><th>Телефон</th><th>На руках</th><th>Штраф</th><th>Статус</th><th></th></tr></thead>
+      <tbody>
+      <tr th:each="r : ${rows}">
+        <td th:text="${r.user().ticketNumber}"></td>
+        <td>
+          <span th:text="${r.user().fullName}"></span>
+          <div class="sub" th:text="${r.user().email}"></div>
+        </td>
+        <td th:text="${r.user().phone} ?: '—'"></td>
+        <td th:text="${r.active()}"></td>
+        <td th:classappend="${r.fineDue() > 0} ? 'bad'" th:text="${r.fineDue() > 0} ? ${r.fineDue()} + ' ₽' : '—'"></td>
+        <td>
+          <span class="tag late" th:if="${r.user().blocked}">Заблокирован</span>
+          <span class="tag ok" th:unless="${r.user().blocked}">Активен</span>
+        </td>
+        <td>
+          <form method="post" th:action="@{/admin/readers/{id}/block(id=${r.user().id})}">
+            <button class="btn ghost small" th:text="${r.user().blocked} ? 'Разблокировать' : 'Заблокировать'"></button>
+          </form>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>
